@@ -1,22 +1,25 @@
 
 // third-party stuff
 use dye
-import dye/[core, sprite, app, math]
+import dye/[core, sprite, app, math, input, text]
 import dye/gritty/[texture]
 
 // sdk
-import math
+import math, math/Random
+import structs/[ArrayList]
 
 main: func {
     CircleTest new() run(60.0)
 }
 
 CircleTest: class extends App {
+    stuffs := ArrayList<Stuff> new()
 
-    sprite: GlSprite
+    settingsList := ArrayList<Setting> new()
+    settingIndex := 0
+    setting: Setting
 
-    buffer: Buffer
-    texture: Texture
+    label: GlText
 
     init: func {
         super("Circle test", 1280, 720)
@@ -24,32 +27,111 @@ CircleTest: class extends App {
     }
 
     setup: func {
-        texture = Texture new(64, 64, "<circle>", TextureFilter NEAREST)
+        add(Stuff new(dye, 64, 10.0, 0.0))
+        label = GlText new("Harabara.ttf", "0.0", 40)
+        label color set!(255, 255, 255)
+        label pos set!(20, 20)
+        dye add(label)
+
+        setupSettings()
+        setSetting(0)
+
+        setupEvents()
+    }
+
+    setupEvents: func {
+        dye input onKeyPress(KeyCode SPACE, |kp|
+            nextSetting()
+        )
+    }
+
+    setupSettings: func {
+        settingsList add(Setting new(3.0, 3))
+        settingsList add(Setting new(2.0, 3))
+        settingsList add(Setting new(1.5, 3))
+        settingsList add(Setting new(1.0, 3))
+        settingsList add(Setting new(0.75, 3))
+        settingsList add(Setting new(0.66666, 3))
+        settingsList add(Setting new(0.5, 3))
+        settingsList add(Setting new(0.3, 3))
+        settingsList add(Setting new(0.25, 3))
+        settingsList add(Setting new(0.1, 3))
+        settingsList add(Setting new(0.05, 3))
+        settingsList add(Setting new(0.03, 3))
+        settingsList add(Setting new(0.02, 3))
+        settingsList add(Setting new(0.01, 3))
+        settingsList add(Setting new(0.002, 3))
+        settingsList add(Setting new(0.001, 3))
+        settingsList add(Setting new(0.0005, 3))
+    }
+
+    nextSetting: func { 
+        settingIndex = (settingIndex + 1) % settingsList size
+        setSetting(settingIndex)
+    }
+
+    setSetting: func (i: Int) {
+        setting = settingsList get(i)
+
+        stuff := stuffs get(0)
+        stuff buffer clear()
+        stuff buffer division = setting division
+    }
+
+    add: func (s: Stuff) {
+        stuffs add(s)
+        dye add(s)
+    }
+
+    update: func {
+        label value = "%.6f" format(setting division)
+
+        for (s in stuffs) {
+            for (i in 0..setting step) {
+                s update()
+            }
+        }
+    }
+
+}
+
+Setting: class {
+    division: Float
+    step: Int
+
+    init: func (=division, =step) {
+    }
+}
+
+Stuff: class extends GlSprite {
+    buffer: Buffer
+    angleOffset: Float
+
+    init: func (dye: DyeContext, side, scaleFactor: Float, =angleOffset) {
+        texture := Texture new(side, side, "<circle>", TextureFilter NEAREST)
 
         buffer = Buffer new(texture width, texture height)
         buffer update()
         texture upload(buffer data)
 
-        sprite = GlSprite new(texture)
-        sprite pos set!(dye width * 0.5, dye height * 0.5)
-        sprite scale set!(8, 8)
-
-        dye add(sprite)
+        super(texture)
+        pos set!(dye width * 0.5, dye height * 0.5)
+        scale set!(scaleFactor, scaleFactor)
     }
 
     update: func {
         buffer update()
         texture update(buffer data)
 
-        sprite angle = buffer angle toDegrees() * -1.0
+        angle = angleOffset + (buffer angle toDegrees() * -1.0)
     }
-
 }
 
 Buffer: class {
 
     data: UInt8*
     width, height: Int
+    size: Int
 
     angle := 0.0
     incr := 0.0
@@ -57,35 +139,50 @@ Buffer: class {
 
     radius, maxRadius, radiusVar: Float
 
-    baseColor := Color new(128, 128, 128)
     redIncr := 0.004
     greenIncr := 0.002
     blueIncr := 0.003
 
     r, g, b: Float
 
-    init: func (=width, =height) {
-        size := width * height * 4
-        data = gc_malloc(size)
+    division := 0.003
 
-        for (i in 0..size) {
-            data[i] = 0
-        }
+    init: func (=width, =height) {
+        r = (Random randInt(50, 225) as Float) / 255.0
+        g = (Random randInt(50, 225) as Float) / 255.0
+        b = (Random randInt(50, 225) as Float) / 255.0
+
+        size = width * height * 4
+        data = gc_malloc(size)
+        clear()
 
         offset = vec2(width * 0.5, height * 0.5)
         maxRadius = width * 0.4
         radius = 0
 
         radiusVar = 0.0
+    }
 
-        r = g = b = 0.5
+    clear: func {
+        for (i in 0..size) {
+            data[i] = 0
+        }
     }
 
     update: func {
         radius = sin(radiusVar) * maxRadius
-        radiusVar += (PI * 0.01)
+        radiusIncr := PI * 0.01
+        radiusVar += radiusIncr
 
-        angle += (PI * 0.005)
+        angle += (radiusIncr / division)
+        if (angle > 2 * PI) {
+            angle -= 2 * PI
+        }
+        if (angle < 0) {
+            angle += 2 * PI
+        }
+
+
         point := offset add(Vec2 fromAngle(angle) mul(radius))
 
         thickness := 4
