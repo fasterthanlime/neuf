@@ -46,23 +46,26 @@ CircleTest: class extends App {
     }
 
     setupSettings: func {
-        settingsList add(Setting new(3.0, 3))
-        settingsList add(Setting new(2.0, 3))
-        settingsList add(Setting new(1.5, 3))
-        settingsList add(Setting new(1.0, 3))
-        settingsList add(Setting new(0.75, 3))
-        settingsList add(Setting new(0.66666, 3))
-        settingsList add(Setting new(0.5, 3))
-        settingsList add(Setting new(0.3, 3))
+        settingsList add(Setting new(4.0, 2))
+        settingsList add(Setting new(3.0, 2))
+        settingsList add(Setting new(2.0, 2))
+        settingsList add(Setting new(1.5, 2))
+        settingsList add(Setting new(1.0, 2))
+        settingsList add(Setting new(0.75, 2))
+        settingsList add(Setting new(0.66666, 2))
+        settingsList add(Setting new(0.5, 2))
+        settingsList add(Setting new(0.3, 2))
         settingsList add(Setting new(0.25, 3))
         settingsList add(Setting new(0.1, 3))
+        settingsList add(Setting new(0.075, 3))
         settingsList add(Setting new(0.05, 3))
+        settingsList add(Setting new(0.06, 3))
         settingsList add(Setting new(0.03, 3))
         settingsList add(Setting new(0.02, 3))
-        settingsList add(Setting new(0.01, 3))
         settingsList add(Setting new(0.002, 3))
         settingsList add(Setting new(0.001, 3))
-        settingsList add(Setting new(0.0005, 3))
+
+        settingsList reverse!()
     }
 
     nextSetting: func { 
@@ -84,7 +87,7 @@ CircleTest: class extends App {
     }
 
     update: func {
-        label value = "%.6f" format(setting division)
+        label value = "%.3f" format(setting division)
 
         for (s in stuffs) {
             for (i in 0..setting step) {
@@ -139,18 +142,18 @@ Buffer: class {
 
     radius, maxRadius, radiusVar: Float
 
-    redIncr := 0.004
-    greenIncr := 0.002
-    blueIncr := 0.003
+    redIncr := 0.0042
+    greenIncr := 0.0027
+    blueIncr := 0.0031
 
     r, g, b: Float
 
     division := 0.003
 
     init: func (=width, =height) {
-        r = (Random randInt(50, 225) as Float) / 255.0
-        g = (Random randInt(50, 225) as Float) / 255.0
-        b = (Random randInt(50, 225) as Float) / 255.0
+        r = (Random randInt(80, 200) as Float) / 255.0
+        g = (Random randInt(80, 200) as Float) / 255.0
+        b = (Random randInt(80, 200) as Float) / 255.0
 
         size = width * height * 4
         data = gc_malloc(size)
@@ -181,7 +184,6 @@ Buffer: class {
         if (angle < 0) {
             angle += 2 * PI
         }
-
 
         point := offset add(Vec2 fromAngle(angle) mul(radius))
 
