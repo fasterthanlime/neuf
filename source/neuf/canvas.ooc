@@ -57,7 +57,7 @@ Canvas: class extends GlDrawable {
 
     /**
      * Non-antialiased, straight-Bresenham line plotting
-     * http://members.chello.at/~easyfilter/bresenham.html
+     * http://members.chello.at/~easyfilter/Bresenham.pdf
      */
     plotLine: func (x0, y0, x1, y1: Int) {
         dx :=  abs(x1 - x0)
@@ -85,6 +85,34 @@ Canvas: class extends GlDrawable {
                err += dx
                y0 += sy
             } /* e_xy+e_y < 0 */
+        }
+    }
+
+    /**
+     * Non-antialiased circle plotting
+     * http://members.chello.at/~easyfilter/Bresenham.pdf
+     */
+    plotCircle: func (xm, ym, r: Int) {
+        x := -r
+        y := 0
+        err := 2 - 2 * r /* II. Quadrant */ 
+
+        while (true) {
+            put(xm-x, ym+y) /*   I. Quadrant */
+            put(xm-y, ym-x) /*  II. Quadrant */
+            put(xm+x, ym-y) /* III. Quadrant */
+            put(xm+y, ym+x) /*  IV. Quadrant */
+            r = err
+
+            if (r <= y) {
+                y += 1
+                err += y * 2 + 1 /* e_xy+e_y < 0 */
+            }
+            if (r > x || err > y) {
+                x += 1
+                err += x * 2 + 1 /* e_xy+e_x > 0 or no 2nd y-step */
+            }
+            if (x >= 0) break
         }
     }
 }
