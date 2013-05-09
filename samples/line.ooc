@@ -11,7 +11,7 @@ import structs/[ArrayList]
 // ours
 import common/canvas
 
-main: func {
+main: func (argc: Int, argv: CString*) {
     LineTest new() run(60.0)
 }
 

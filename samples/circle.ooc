@@ -8,7 +8,7 @@ import dye/gritty/[texture]
 import math, math/Random
 import structs/[ArrayList]
 
-main: func {
+main: func (argc: Int, argv: CString*) {
     CircleTest new() run(60.0)
 }
 
