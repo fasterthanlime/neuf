@@ -9,10 +9,10 @@ import math, math/Random
 import structs/[ArrayList]
 
 main: func (argc: Int, argv: CString*) {
-    CircleTest new() run(60.0)
+    PixelOrgy new() run(60.0)
 }
 
-CircleTest: class extends App {
+PixelOrgy: class extends App {
     stuffs := ArrayList<Stuff> new()
 
     settingsList := ArrayList<Setting> new()
