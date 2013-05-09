@@ -70,7 +70,7 @@ Canvas: class extends GlDrawable {
         e2: Int /* error value e_xy */
         
         while (true) {
-            put(x0, y0);
+            put(x0, y0)
             if (x0 == x1 && y0 == y1) {
                 break
             }
@@ -98,10 +98,10 @@ Canvas: class extends GlDrawable {
         err := 2 - 2 * r /* II. Quadrant */ 
 
         while (true) {
-            put(xm-x, ym+y) /*   I. Quadrant */
-            put(xm-y, ym-x) /*  II. Quadrant */
-            put(xm+x, ym-y) /* III. Quadrant */
-            put(xm+y, ym+x) /*  IV. Quadrant */
+            put(xm - x, ym + y) /*   I. Quadrant */
+            put(xm - y, ym - x) /*  II. Quadrant */
+            put(xm + x, ym - y) /* III. Quadrant */
+            put(xm + y, ym + x) /*  IV. Quadrant */
             r = err
 
             if (r <= y) {
@@ -115,6 +115,61 @@ Canvas: class extends GlDrawable {
             if (x >= 0) break
         }
     }
+
+    plotEllipseRect: func (x0, y0, x1, y1: Long) {
+        a := abs(x1 - x0) as Long
+        b := abs(y1 - y0) as Long
+        b1 := (b & 1) as Long /* values of diameter */
+
+        dx: Long = (4 as Long) * ((1 as Long) - a) * b * b
+        dy: Long = (4 as Long) * (b1 + (1 as Long)) * a * a /* error increment */
+        err: Long = dx + dy + b1 * a * a /* error of 1.step */
+        e2: Long
+
+        if (x0 > x1) {
+            /* if called with swapped points */
+            x0 = x1
+            x1 += a
+        }
+        if (y0 > y1) {
+            y0 = y1 /* .. exchange them */
+        }
+        y0 += (b + 1) / 2
+        y1 = y0 - b1   /* starting pixel */
+        a *= 8 * a
+        b1 = 8 * b *b
+
+        while(true) {
+            put(x1, y0) /*   I. Quadrant */
+            put(x0, y0) /*  II. Quadrant */
+            put(x0, y1) /* III. Quadrant */
+            put(x1, y1) /*  IV. Quadrant */
+            e2 = 2 * err
+            if (e2 <= dy) {
+                y0 += 1
+                y1 -= 1
+                dy += a
+                err += dy
+            }  /* y step */ 
+            if (e2 >= dx || 2*err > dy) {
+                x0 += 1
+                x1 -= 1
+                dx += b1
+                err += dx
+            } /* x step */
+            if (x0 > x1) break
+        }
+        
+        while (y0 - y1 < b) {  /* too early stop of flat ellipses a=1 */
+            put(x0 - 1, y0) /* -> finish tip of ellipse */
+            y0 += 1
+            put(x1 + 1, y0)
+            put(x0 - 1, y1)
+            y1 -= 1
+            put(x1 + 1, y1)
+        }
+    }
+
 }
 
 
