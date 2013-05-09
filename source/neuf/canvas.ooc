@@ -170,6 +170,114 @@ Canvas: class extends GlDrawable {
         }
     }
 
+    plotQuadBezierSeg: func (x0, y0, x1, y1, x2, y2: Int) {                            
+        sx := x2 - x1
+        sy := y2 - y1
+
+        xx: Long = x0 - x1
+        yy: Long = y0 - y1
+        
+        xy: Long  /* relative values for checks */
+        dx, dy, err: Double
+        cur: Double = xx * sy - yy * sx /* curvature */
+
+        "sx = %d, sy = %d, cur = %.2f" printfln(sx, sy, cur)
+        "xx * sx = %d, yy * sy = %d" printfln(xx * sx, yy * sy)
+
+        if (xx * sx <= 0 && yy * sy <= 0) {
+            // all good
+        } else {
+            /* sign of gradient must not change */
+            "Sign of gradient must not change" println()
+            return
+        }
+
+        if (sx * (sx as Long) +
+            sy * (sy as Long) > xx * xx + yy * yy) { /* begin with longer part */ 
+            x2 = x0
+            x0 = sx + x1
+
+            y2 = y0
+            y0 = sy + y1
+
+            cur = -cur  /* swap P0 P2 */
+
+            "sx = %d, sy = %d, cur = %.2f" printfln(sx, sy, cur)
+            "xx * sx = %d, yy * sy = %d" printfln(xx * sx, yy * sy)
+
+            "swapping P0 and P2" println()
+        }  
+
+        if (cur != 0) {                                    /* no straight line */
+            "no straight line. xx = %d, yy = %d" printfln(xx, yy)
+
+            xx += sx
+
+            sx = x0 < x2 ? 1 : -1
+            xx *= sx           /* x step direction */
+
+            yy += sy
+
+            sy = y0 < y2 ? 1 : -1
+            yy *= sy           /* y step direction */
+
+            xy = 2 * xx * yy
+
+            xx *= xx
+            yy *= yy          /* differences 2nd degree */
+
+            "sx = %d, sy = %d" printfln(sx, sy)
+            "xx = %d, xy = %d" printfln(xx, xy)
+
+            if (cur * sx * sy < 0) {                           /* negated curvature? */
+                "negated curvature!" println()
+                xx = -xx
+                yy = -yy
+                xy = -xy
+                cur = -cur
+            }
+
+            dx = 4.0 * sy * cur * (x1 - x0) + xx - xy      /* differences 1st degree */
+            dy = 4.0 * sx * cur * (y0 - y1) + yy - xy
+            xx += xx
+            yy += yy
+            err = dx + dy + xy                /* error 1st step */    
+
+            while (true) {
+                put(x0, y0)                        /* plot curve */
+                
+                if (x0 == x2 && y0 == y2) {
+                    return  /* last pixel -> curve finished */
+                }
+                y1 = (2 * err < dx) ? 1 : 0       /* save value for test of y step */
+                if (2 * err > dy) {
+                    x0 += sx
+                    dx -= xy
+                    dy += yy
+                    err += dy
+
+                    "x0 = %.2f, dx = %.2f, dy = %.2f, err = %.2f" printfln(
+                        x0, dx, dy, err)
+                } /* x step */
+                if (    y1    ) {
+                    y0 += sy
+                    dy -= xy
+                    dx += xx
+                    err += dx
+
+                    "y0 = %.2f, dy = %.2f, dx = %.2f, err = %.2f" printfln(
+                        y0, dy, dx, err)
+                } /* y step */
+
+                "dx = %.2f, dy = %.2f" printfln(dx, dy)
+
+                if (dx >= dy) break
+            }
+        }
+
+        plotLine(x0, y0, x2, y2)                  /* plot remaining part to end */
+    }  
+
 }
 
 
