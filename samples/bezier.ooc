@@ -27,19 +27,16 @@ BezierTest: class extends App {
     setup: func {
         canvas = Canvas new(dye width, dye height)
         dye add(canvas)
-        drawOnce()
     }
 
-    drawOnce: func {
+    update: func {
         canvas clear()
 
         mousePos := dye input getMousePos()
 
-        p1 := vec2i(200, 200)
-        p2 := vec2i(29, 149)
-        p3 := vec2i(0, 0)
-
-        "%s, %s, %s" printfln(p1 _, p2 _, p3 _)
+        p1 := vec2i(100, 100)
+        p2 := vec2i(mousePos x, mousePos y)
+        p3 := vec2i(dye width - 100, dye height - 100)
 
         canvas plotLine(p1 x, p1 y, p2 x, p2 y)
         canvas plotLine(p2 x, p2 y, p3 x, p3 y)
