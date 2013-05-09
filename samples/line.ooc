@@ -9,7 +9,8 @@ import math, math/Random
 import structs/[ArrayList]
 
 // ours
-import common/canvas
+use neuf
+import neuf/canvas
 
 main: func (argc: Int, argv: CString*) {
     LineTest new() run(60.0)
