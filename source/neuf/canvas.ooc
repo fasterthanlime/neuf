@@ -241,6 +241,8 @@ Canvas: class extends GlDrawable {
             dy = 4.0 * sx * cur * (y0 - y1) + yy - xy
             xx += xx
             yy += yy
+
+            "dx, dy, xy = %.2f, %.2f, %d" printfln(dx, dy, xy)
             err = dx + dy + xy                /* error 1st step */    
 
             while (true) {
@@ -249,8 +251,15 @@ Canvas: class extends GlDrawable {
                 if (x0 == x2 && y0 == y2) {
                     return  /* last pixel -> curve finished */
                 }
-                y1 = (2 * err < dx) ? 1 : 0       /* save value for test of y step */
-                if (2 * err > dy) {
+
+                /* save value for test of y step */
+                y1 = (2.0 * err < (dx as Double)) ? 1 : 0
+
+                "2 * err = %.2f, dy = %.2f, dx = %.2f" printfln(2.0 * err, dx, dy)
+                "     (2 * err > dy) = %d" printfln(2.0 * err > (dy as Double)) 
+                "y1 = (2 * err < dx) = %d" printfln(y1) 
+
+                if (2.0 * err > (dy as Double)) {
                     x0 += sx
                     dx -= xy
                     dy += yy

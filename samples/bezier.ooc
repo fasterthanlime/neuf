@@ -35,9 +35,9 @@ BezierTest: class extends App {
 
         mousePos := dye input getMousePos()
 
-        p1 := vec2i(0, 0)
-        p2 := vec2i(150, 50)
-        p3 := vec2i(200, 200)
+        p1 := vec2i(200, 200)
+        p2 := vec2i(29, 149)
+        p3 := vec2i(0, 0)
 
         "%s, %s, %s" printfln(p1 _, p2 _, p3 _)
 
