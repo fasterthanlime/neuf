@@ -18,8 +18,9 @@ main: func (argc: Int, argv: CString*) {
 
 BezierKnotsTest: class extends App {
     canvas: Canvas
+    shibari: Shibari
 
-    knots := ArrayList<Knot> new()
+    knot1, knot2, knot3: Knot
 
     init: func {
         super("BezierKnots test", 512, 512)
@@ -30,27 +31,20 @@ BezierKnotsTest: class extends App {
         canvas = Canvas new(dye width, dye height)
         dye add(canvas)
 
-        addKnot(100, 100)
-        addKnot(50, 150)
-        addKnot(500, 500)
-    }
-
-    addKnot: func (x, y: Float) {
-        knot := Knot new(vec2(x, y))
-        knots add(knot)
-        dye add(knot)
+        shibari = Shibari new(dye getScene())
+        knot1 = shibari add(100, 100)
+        knot2 = shibari add(50, 150)
+        knot3 = shibari add(500, 500)
+        dye add(shibari)
     }
 
     update: func {
-        for (k in knots) {
-            k update(dye)
-        }
-
+        shibari update()
         canvas clear()
 
-        p1 := knots get(0) pos
-        p2 := knots get(1) pos
-        p3 := knots get(2) pos
+        p1 := knot1 pos round()
+        p2 := knot2 pos round()
+        p3 := knot3 pos round()
 
         canvas plotLine(p1 x, p1 y, p2 x, p2 y)
         canvas plotLine(p2 x, p2 y, p3 x, p3 y)
