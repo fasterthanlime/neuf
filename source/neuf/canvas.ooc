@@ -207,6 +207,55 @@ Canvas: class extends GlDrawable {
         }
     }  
 
+    plotCubicBezierSeg: func (ix1, iy1, ix2, iy2, ix3, iy3, ix4, iy4: Int) {
+        x1 := ix1 as Float
+        y1 := iy1 as Float
+
+        x2 := ix2 as Float
+        y2 := iy2 as Float
+
+        x3 := ix3 as Float
+        y3 := iy3 as Float
+
+        x4 := ix4 as Float
+        y4 := iy4 as Float
+
+        a := 0.0
+        step := 0.01
+
+        prevX := x1
+        prevY := y1
+
+        while (a < 1.0) {
+            ai := 1.0 - a
+
+            x12 := x1 * ai + x2 * a
+            y12 := y1 * ai + y2 * a
+
+            x23 := x2 * ai + x3 * a
+            y23 := y2 * ai + y3 * a
+
+            x34 := x3 * ai + x4 * a
+            y34 := y3 * ai + y4 * a
+
+            x123 := x12 * ai + x23 * a
+            y123 := y12 * ai + y23 * a
+
+            x234 := x23 * ai + x34 * a
+            y234 := y23 * ai + y34 * a
+
+            x1234 := x123 * ai + x234 * a
+            y1234 := y123 * ai + y234 * a
+
+            plotLine(prevX as Int, prevY as Int, x1234 as Int, y1234 as Int)
+
+            prevX = x1234
+            prevY = y1234
+
+            a += step
+        }
+    }  
+
 }
 
 
