@@ -137,7 +137,7 @@ SVGPathElementType: enum {
             case This m => "move relative"
             case This M => "move absolute"
             case This C => "cubic bezier absolute"
-            case This c => "cubic bezier absolute"
+            case This c => "cubic bezier relative"
             case This S => "shorthand/smooth cubic bezier absolute"
             case This s => "shorthand/smooth cubic bezier relative"
             case This Q => "quadratic bezier absolute"
