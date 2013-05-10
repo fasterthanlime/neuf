@@ -10,6 +10,7 @@ import structs/[ArrayList]
 SVGParser: class {
 
     width, height: SVGMetric
+    viewBox: SVGViewBox
 
     paths := ArrayList<SVGPath> new()
 
@@ -22,11 +23,36 @@ SVGParser: class {
         width = SVGMetric parse(svg getAttr("width"))
         height = SVGMetric parse(svg getAttr("height"))
 
+        viewBox = SVGViewBox parse(svg getAttr("viewBox"))
+
         pathNode := tree findElement(svg, "path")
         path := SVGPath parse(pathNode getAttr("d"))
         paths add(path)
 
         tree delete()
+    }
+
+}
+
+SVGViewBox: class {
+
+    xMin, yMin, width, height: Float
+
+    init: func (=xMin, =yMin, =width, =height)
+
+    parse: static func (s: String) -> This {
+        tokens := s split(' ')
+        xMin   := tokens get(0) toFloat()
+        yMin   := tokens get(1) toFloat()
+        width  := tokens get(2) toFloat()
+        height := tokens get(3) toFloat()
+
+        This new(xMin, yMin, width, height)
+    }
+
+    toString: func -> String {
+        "min = (%.2f, %.2f), size = (%.2f, %.2f)" format(
+            xMin, yMin, width, height)
     }
 
 }
