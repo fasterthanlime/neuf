@@ -1,13 +1,20 @@
 
+// third-party
 use mxml
+
+// sdk
 import io/File
+import text/StringTokenizer
+import structs/[ArrayList]
 
 SVGParser: class {
 
     width, height: SVGMetric
 
-    init: func (path: String) {
-        file := File new(path)
+    paths := ArrayList<SVGPath> new()
+
+    init: func (filePath: String) {
+        file := File new(filePath)
         tree := XmlNode new()
         tree loadString(file read(), MXML_OPAQUE_CALLBACK)
 
@@ -15,15 +22,108 @@ SVGParser: class {
         width = SVGMetric parse(svg getAttr("width"))
         height = SVGMetric parse(svg getAttr("height"))
 
+        pathNode := tree findElement(svg, "path")
+        path := SVGPath parse(pathNode getAttr("d"))
+        paths add(path)
+
         tree delete()
     }
 
 }
 
+SVGPath: class {
+
+    elements := ArrayList<SVGPathElement> new()
+
+    init: func
+
+    parse: static func (s: String) -> This {
+        path := This new()
+
+        tokens := s split(' ')
+
+        while (!tokens empty?()) {
+            t := tokens removeAt(0)
+
+            match {
+                case (t startsWith?("M")) =>
+                    // move
+                    point := SVGPoint parse(t substring(1))
+                    elem := SVGPathElement new(SVGPathElementType M)
+                    elem points add(point)
+                    path elements add(elem)
+                case (t startsWith?("Q")) =>
+                    // quadratic bezier absolute
+                    point := SVGPoint parse(t substring(1))
+                    elem := SVGPathElement new(SVGPathElementType Q)
+                    elem points add(point)
+                    path elements add(elem)
+                case (t startsWith?("T")) =>
+                    // quadratic bezier shorthand/smooth absolute
+                    point := SVGPoint parse(t substring(1))
+                    elem := SVGPathElement new(SVGPathElementType T)
+                    elem points add(point)
+                    path elements add(elem)
+                case =>
+                    // additional point
+                    path elements last() points add(SVGPoint parse(t))
+            }
+        }
+
+        path
+    }
+
+}
+
+SVGPathElement: class {
+
+    type: SVGPathElementType
+    points := ArrayList<SVGPoint> new()
+
+    init: func (=type)
+
+}
+
+SVGPoint: class {
+
+    x, y: Float
+
+    init: func (=x, =y)
+
+    parse: static func (s: String) -> This {
+        tokens := s split(',') 
+
+        This new(
+            tokens get(0) toFloat(),
+            tokens get(1) toFloat() 
+        )
+    }
+
+}
+
+SVGPathElementType: enum {
+    M /* move */
+    Q /* quadratic bezier absolute */
+    q /* quadratic bezier relative */
+    T /* shorthand/smooth quadratic bezier absolute */
+    t /* shorthand/smooth quadratic bezier relative */
+
+    toString: func -> String {
+        match this {
+            case This M => "move"
+            case This Q => "quadratic bezier absolute"
+            case This q => "quadratic bezier relative"
+            case This T => "shorthand/smooth quadratic bezier absolute"
+            case This t => "shorthand/smooth quadratic bezier relative"
+            case => "<unknown>"
+        }
+    }
+}
+
 SVGMetric: class {
 
     unit: SVGUnit
-    value: Int
+    value: Float
 
     init: func (=value, =unit) {
     }
@@ -51,7 +151,7 @@ SVGMetric: class {
             case s endsWith?("px") =>
                 rest = s substring(0, -2) 
         }
-        value := rest toInt()
+        value := rest toFloat()
 
         This new(value, unit)
     }
