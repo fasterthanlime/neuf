@@ -28,7 +28,7 @@ PixelOrgy: class extends App {
 
     setup: func {
         add(Stuff new(dye, 64, 10.0, 0.0))
-        label = GlText new("Harabara.ttf", "0.0", 40)
+        label = GlText new("assets/Harabara.ttf", "0.0", 40)
         label color set!(255, 255, 255)
         label pos set!(20, 20)
         dye add(label)
