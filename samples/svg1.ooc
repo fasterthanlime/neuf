@@ -31,7 +31,7 @@ SVGTest: class extends App {
         canvas = Canvas new(1280, 900)
         dye add(canvas)
     
-        parser := SVGParser new("assets/quad01.svg")
+        parser := SVGParser new("assets/quad02.svg")
         "width, height = %dpx, %dpx" printfln(
           parser width toPixels(),
           parser height toPixels()
@@ -56,6 +56,9 @@ SVGTest: class extends App {
         i := 0
         for (elem in path elements) {
             match (elem type) {
+                case SVGPathElementType m =>
+                    point := elem points first()
+                    currentPos set!(point x, point y)
                 case SVGPathElementType M =>
                     point := elem points first()
                     currentPos set!(point x, point y)

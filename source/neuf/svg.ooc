@@ -46,24 +46,31 @@ SVGPath: class {
             t := tokens removeAt(0)
 
             match {
+                // Move
                 case (t startsWith?("M")) =>
-                    // move
-                    point := SVGPoint parse(t substring(1))
-                    elem := SVGPathElement new(SVGPathElementType M)
-                    elem points add(point)
-                    path elements add(elem)
+                    parsePathElement(path, SVGPathElementType M, t)
+                case (t startsWith?("m")) =>
+                    parsePathElement(path, SVGPathElementType m, t)
+
+                // Cubic bezier
+                case (t startsWith?("C")) =>
+                    parsePathElement(path, SVGPathElementType C, t)
+                case (t startsWith?("c")) =>
+                    parsePathElement(path, SVGPathElementType c, t)
+                case (t startsWith?("S")) =>
+                    parsePathElement(path, SVGPathElementType S, t)
+                case (t startsWith?("s")) =>
+                    parsePathElement(path, SVGPathElementType s, t)
+
+                // Quadratic bezier
                 case (t startsWith?("Q")) =>
-                    // quadratic bezier absolute
-                    point := SVGPoint parse(t substring(1))
-                    elem := SVGPathElement new(SVGPathElementType Q)
-                    elem points add(point)
-                    path elements add(elem)
+                    parsePathElement(path, SVGPathElementType Q, t)
+                case (t startsWith?("q")) =>
+                    parsePathElement(path, SVGPathElementType q, t)
                 case (t startsWith?("T")) =>
-                    // quadratic bezier shorthand/smooth absolute
-                    point := SVGPoint parse(t substring(1))
-                    elem := SVGPathElement new(SVGPathElementType T)
-                    elem points add(point)
-                    path elements add(elem)
+                    parsePathElement(path, SVGPathElementType T, t)
+                case (t startsWith?("t")) =>
+                    parsePathElement(path, SVGPathElementType t, t)
                 case =>
                     // additional point
                     path elements last() points add(SVGPoint parse(t))
@@ -71,6 +78,18 @@ SVGPath: class {
         }
 
         path
+    }
+
+    parsePathElement: static func (path: SVGPath, type: SVGPathElementType,
+        token: String) -> SVGPathElement {
+
+        elem := SVGPathElement new(type)
+        rest := token substring(1) trim()
+        if (!rest empty?()) {
+            point := SVGPoint parse(rest)
+            elem points add(point)
+        }
+        path elements add(elem)
     }
 
 }
@@ -102,7 +121,12 @@ SVGPoint: class {
 }
 
 SVGPathElementType: enum {
-    M /* move */
+    m /* move relative */
+    M /* move absolute */
+    C /* cubic bezier absolute */
+    c /* cubic bezier relative */
+    S /* shorthand/smooth cubic bezier absolute */
+    s /* shorthand/smooth cubic bezier relative */
     Q /* quadratic bezier absolute */
     q /* quadratic bezier relative */
     T /* shorthand/smooth quadratic bezier absolute */
@@ -110,7 +134,12 @@ SVGPathElementType: enum {
 
     toString: func -> String {
         match this {
-            case This M => "move"
+            case This m => "move relative"
+            case This M => "move absolute"
+            case This C => "cubic bezier absolute"
+            case This c => "cubic bezier absolute"
+            case This S => "shorthand/smooth cubic bezier absolute"
+            case This s => "shorthand/smooth cubic bezier relative"
             case This Q => "quadratic bezier absolute"
             case This q => "quadratic bezier relative"
             case This T => "shorthand/smooth quadratic bezier absolute"
