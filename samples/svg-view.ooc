@@ -13,7 +13,7 @@ use neuf
 import neuf/[canvas, knot, svg, svg-draw]
 
 main: func (argc: Int, argv: CString*) {
-    path := "assets/quad01.svg"
+    path := "assets/quad-bezier-absolute.svg"
     if (argc > 1) {
         path = argv[1] toString()
     }
@@ -29,12 +29,12 @@ SVGTest: class extends App {
     knot1, knot2, knot3, knot4: Knot
 
     init: func (=filePath) {
-        super("SVG test: %s" format(filePath), 1024, 768)
+        super("SVG test: %s" format(filePath), 512, 512)
         dye setClearColor(Color black())
     }
 
     setup: func {
-        canvas = Canvas new(1280, 900)
+        canvas = Canvas new(512, 512)
         dye add(canvas)
     
         parser := SVGParser new(filePath)

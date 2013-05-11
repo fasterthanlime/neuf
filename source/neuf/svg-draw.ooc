@@ -36,33 +36,55 @@ SVGPathDrawer: class {
 
     drawElement: func (i: Int, elem: SVGPathElement) {
         match (elem type) {
+
+            // Move
+
             case SVGPathElementType M =>
                 point := elem points first()
                 move(absolute(point))
+
             case SVGPathElementType m =>
-                // if first move, will do an absolute move, duh
-                // Inkscape is really silly in that regard
                 point := elem points first()
                 move(relative(point))
+
+            // Quad bezier
+
             case SVGPathElementType Q =>
-                j := 0
-                while (elem points size - j >= 2) {
-                    control := absolute(elem points get(j))
-                    p2      := absolute(elem points get(j + 1))
-                    quadBezier(control, p2)
-                    j += 2
-                }
+                eachQuadBezier(CoordType ABSOLUTE, elem)
+            case SVGPathElementType q =>
+                eachQuadBezier(CoordType RELATIVE, elem)
             case SVGPathElementType T =>
-                j := 0
-                while (elem points size - j >= 1) {
-                    c := currentPos
-                    if (lastType == DrawType QUAD_BEZIER && lastControl) {
-                        c = currentPos add(currentPos sub(lastControl))
-                    }
-                    p2 := absolute(elem points get(j))
-                    quadBezier(c, p2)
-                    j += 1
-                }
+                eachQuadBezierSmooth(CoordType ABSOLUTE, elem)
+            case SVGPathElementType t =>
+                eachQuadBezierSmooth(CoordType RELATIVE, elem)
+
+            // Cubic bezier
+
+            case =>
+                "Unknown element type: %s" printfln(elem type toString())
+        }
+    }
+
+    eachQuadBezier: func (coord: CoordType, elem: SVGPathElement) {
+        j := 0
+        while (elem points size - j >= 2) {
+            control := convert(elem points get(j), coord)
+            p2      := convert(elem points get(j + 1), coord)
+            quadBezier(control, p2)
+            j += 2
+        }
+    }
+
+    eachQuadBezierSmooth: func (coord: CoordType, elem: SVGPathElement) {
+        j := 0
+        while (elem points size - j >= 1) {
+            c := currentPos
+            if (lastType == DrawType QUAD_BEZIER && lastControl) {
+                c = currentPos add(currentPos sub(lastControl))
+            }
+            p2 := convert(elem points get(j), coord)
+            quadBezier(c, p2)
+            j += 1
         }
     }
 
@@ -82,6 +104,15 @@ SVGPathDrawer: class {
         currentPos set!(p2 x, p2 y)
         lastType = DrawType QUAD_BEZIER
         lastControl = c
+    }
+
+    convert: func (p: SVGPoint, coord: CoordType) -> Vec2 {
+        match coord {
+            case CoordType ABSOLUTE =>
+                absolute(p)
+            case =>
+                relative(p)
+        }
     }
 
     absolute: func (p: SVGPoint) -> Vec2 {
@@ -106,6 +137,11 @@ SVGPathDrawer: class {
         parser width toPixels() / parser viewBox width
     }
 
+}
+
+CoordType: enum {
+    RELATIVE
+    ABSOLUTE
 }
 
 DrawType: enum {
