@@ -3,7 +3,7 @@
 use mxml
 
 // sdk
-import io/File
+import io/[File, StringReader, Reader]
 import text/StringTokenizer
 import structs/[ArrayList]
 
@@ -80,42 +80,50 @@ SVGPath: class {
     init: func
 
     parse: static func (s: String) -> This {
+        reader := StringReader new(s)
         path := This new()
 
-        tokens := s split(' ')
+        while (reader hasNext?()) {
+            t := reader read()
+            if (t whitespace?()) {
+                continue // skiiiiiiip. skip skip skip skip
+            }
 
-        while (!tokens empty?()) {
-            t := tokens removeAt(0)
-
-            match {
+            match t {
                 // Move
-                case (t startsWith?("M")) =>
-                    parsePathElement(path, SVGPathElementType M, t)
-                case (t startsWith?("m")) =>
-                    parsePathElement(path, SVGPathElementType m, t)
+                case 'M' =>
+                    parsePathElement(path, SVGPathElementType M, reader)
+                case 'm' =>
+                    parsePathElement(path, SVGPathElementType m, reader)
 
                 // Cubic bezier
-                case (t startsWith?("C")) =>
-                    parsePathElement(path, SVGPathElementType C, t)
-                case (t startsWith?("c")) =>
-                    parsePathElement(path, SVGPathElementType c, t)
-                case (t startsWith?("S")) =>
-                    parsePathElement(path, SVGPathElementType S, t)
-                case (t startsWith?("s")) =>
-                    parsePathElement(path, SVGPathElementType s, t)
+                case 'C' =>
+                    parsePathElement(path, SVGPathElementType C, reader)
+                case 'c' =>
+                    parsePathElement(path, SVGPathElementType c, reader)
+                case 'S' =>
+                    parsePathElement(path, SVGPathElementType S, reader)
+                case 's' =>
+                    parsePathElement(path, SVGPathElementType s, reader)
 
                 // Quadratic bezier
-                case (t startsWith?("Q")) =>
-                    parsePathElement(path, SVGPathElementType Q, t)
-                case (t startsWith?("q")) =>
-                    parsePathElement(path, SVGPathElementType q, t)
-                case (t startsWith?("T")) =>
-                    parsePathElement(path, SVGPathElementType T, t)
-                case (t startsWith?("t")) =>
-                    parsePathElement(path, SVGPathElementType t, t)
+                case 'Q' =>
+                    parsePathElement(path, SVGPathElementType Q, reader)
+                case 'q' =>
+                    parsePathElement(path, SVGPathElementType q, reader)
+                case 'T' =>
+                    parsePathElement(path, SVGPathElementType T, reader)
+                case 't' =>
+                    parsePathElement(path, SVGPathElementType t, reader)
+
+                // Close path
+                case 'Z' =>
+                    parsePathElement(path, SVGPathElementType Z, reader)
+                case 'z' =>
+                    parsePathElement(path, SVGPathElementType z, reader)
+
                 case =>
-                    // additional point
-                    path elements last() points add(SVGPoint parse(t))
+                    "Unknown symbol in SVG path: %c" printfln(t)
             }
         }
 
@@ -123,13 +131,18 @@ SVGPath: class {
     }
 
     parsePathElement: static func (path: SVGPath, type: SVGPathElementType,
-        token: String) -> SVGPathElement {
+        reader: Reader) -> SVGPathElement {
 
         elem := SVGPathElement new(type)
-        rest := token substring(1) trim()
-        if (!rest empty?()) {
-            point := SVGPoint parse(rest)
-            elem points add(point)
+        while (true) {
+            point := SVGPoint parse(reader)
+
+            if (point) {
+                elem points add(point)
+            } else {
+                // done parsing points!
+                break
+            }
         }
         path elements add(elem)
     }
@@ -151,13 +164,43 @@ SVGPoint: class {
 
     init: func (=x, =y)
 
-    parse: static func (s: String) -> This {
-        tokens := s split(',') 
+    NUMBER_CHARS := static "0123456789."
 
-        This new(
-            tokens get(0) toFloat(),
-            tokens get(1) toFloat() 
-        )
+    parse: static func (reader: Reader) -> This {
+        if (!reader hasNext?()) return null
+
+        // skip spaces
+        reader skipWhile(|c| c == ' ')
+
+        // some point pairs are separated by commas.. whatever
+        reader skipWhile(|c| c == ',')
+
+        mark := reader mark()
+
+        xs := reader readWhile(|c| c == '-')
+        xs = xs + reader readWhile(|c| NUMBER_CHARS contains?(c))
+        if (xs empty?()) {
+            // no point here, we've wandered too far!
+            reader reset(mark)
+            return null
+        }
+
+        mark = reader mark()
+        comma := reader read()
+        if (comma == ',') {
+            // all good
+        } else if (comma == '-') {
+            // separated by dashes because negative numbers..
+            // uncool imho, but still valid
+            reader reset(mark)
+        } else {
+            "Unexpected symbol '%c', was expecting ','" printfln(comma)
+        }
+
+        ys := reader readWhile(|c| c == '-')
+        ys = ys + reader readWhile(|c| NUMBER_CHARS contains?(c))
+
+        This new(xs toFloat(), ys toFloat())
     }
 
 }
@@ -173,6 +216,8 @@ SVGPathElementType: enum {
     q /* quadratic bezier relative */
     T /* shorthand/smooth quadratic bezier absolute */
     t /* shorthand/smooth quadratic bezier relative */
+    Z /* close path */
+    z /* close path */
 
     toString: func -> String {
         match this {
@@ -186,6 +231,8 @@ SVGPathElementType: enum {
             case This q => "quadratic bezier relative"
             case This T => "shorthand/smooth quadratic bezier absolute"
             case This t => "shorthand/smooth quadratic bezier relative"
+            case This Z => "close path"
+            case This z => "close path"
             case => "<unknown>"
         }
     }
