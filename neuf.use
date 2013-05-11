@@ -2,4 +2,5 @@ Name: neuf
 Version: 0.1
 Description: 
 SourcePath: source
+Requires: dye, mxml
 
