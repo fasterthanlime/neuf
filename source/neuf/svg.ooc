@@ -20,10 +20,18 @@ SVGParser: class {
         tree loadString(file read(), MXML_OPAQUE_CALLBACK)
 
         svg := tree findElement(tree, "svg")
-        width = SVGMetric parse(svg getAttr("width"))
-        height = SVGMetric parse(svg getAttr("height"))
 
         viewBox = SVGViewBox parse(svg getAttr("viewBox"))
+
+        if (svg getAttr("width")) {
+            // has width/height specified in SVG
+            width = SVGMetric parse(svg getAttr("width"))
+            height = SVGMetric parse(svg getAttr("height"))
+        } else {
+            // take dimensions from viewBox
+            width = SVGMetric new(viewBox width, SVGUnit PX)
+            height = SVGMetric new(viewBox height, SVGUnit PX)
+        }
 
         pathNode := tree findElement(svg, "path")
         path := SVGPath parse(pathNode getAttr("d"))
@@ -188,8 +196,7 @@ SVGMetric: class {
     unit: SVGUnit
     value: Float
 
-    init: func (=value, =unit) {
-    }
+    init: func (=value, =unit)
 
     parse: static func (s: String) -> This {
         unit := SVGUnit PX
