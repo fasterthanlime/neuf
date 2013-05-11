@@ -53,7 +53,10 @@ SVGTest: class extends App {
         }
         "</path>" println()
 
-        drawer := SVGPathDrawer new(parser, canvas)
+        pen := Pen new(canvas)
+        drawer := SVGPathDrawer new(parser, pen)
+        pen rectangle(vec2(0, 0), vec2(parser getWidth(), parser getHeight())) 
+
         drawer draw(path)
     }
 

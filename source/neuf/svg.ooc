@@ -32,6 +32,14 @@ SVGParser: class {
         tree delete()
     }
 
+    getWidth: func -> Float {
+        width toPixels()
+    }
+
+    getHeight: func -> Float {
+        height toPixels()
+    }
+
 }
 
 SVGViewBox: class {
