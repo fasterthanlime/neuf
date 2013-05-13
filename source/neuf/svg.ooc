@@ -96,6 +96,12 @@ SVGPath: class {
                 case 'm' =>
                     parsePathElement(path, SVGPathElementType m, reader)
 
+                // Line
+                case 'L' =>
+                    parsePathElement(path, SVGPathElementType L, reader)
+                case 'l' =>
+                    parsePathElement(path, SVGPathElementType l, reader)
+
                 // Cubic bezier
                 case 'C' =>
                     parsePathElement(path, SVGPathElementType C, reader)
@@ -206,33 +212,51 @@ SVGPoint: class {
 }
 
 SVGPathElementType: enum {
-    m /* move relative */
-    M /* move absolute */
-    C /* cubic bezier absolute */
-    c /* cubic bezier relative */
-    S /* shorthand/smooth cubic bezier absolute */
-    s /* shorthand/smooth cubic bezier relative */
-    Q /* quadratic bezier absolute */
-    q /* quadratic bezier relative */
-    T /* shorthand/smooth quadratic bezier absolute */
-    t /* shorthand/smooth quadratic bezier relative */
-    Z /* close path */
-    z /* close path */
+    // move
+    M
+    m
+
+    // line
+    L
+    l
+
+    // cubic bezier
+    C
+    c
+    S
+    s
+
+    // quadratic bezier
+    Q
+    q
+    T
+    t
+
+    // close path
+    Z
+    z
 
     toString: func -> String {
         match this {
-            case This m => "move relative"
             case This M => "move absolute"
+            case This m => "move relative"
+
+            case This L => "line absolute"
+            case This l => "line relative"
+
             case This C => "cubic bezier absolute"
             case This c => "cubic bezier relative"
             case This S => "shorthand/smooth cubic bezier absolute"
             case This s => "shorthand/smooth cubic bezier relative"
+
             case This Q => "quadratic bezier absolute"
             case This q => "quadratic bezier relative"
             case This T => "shorthand/smooth quadratic bezier absolute"
             case This t => "shorthand/smooth quadratic bezier relative"
+
             case This Z => "close path"
             case This z => "close path"
+
             case => "<unknown>"
         }
     }

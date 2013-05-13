@@ -47,6 +47,13 @@ SVGPathDrawer: class {
                 point := elem points first()
                 move(relative(point))
 
+            // Line
+
+            case SVGPathElementType L =>
+                eachLine(CoordType ABSOLUTE, elem)
+            case SVGPathElementType l =>
+                eachLine(CoordType RELATIVE, elem)
+
             // Quad bezier
 
             case SVGPathElementType Q =>
@@ -73,6 +80,17 @@ SVGPathDrawer: class {
 
             case =>
                 "Unknown element type: %s" printfln(elem type toString())
+        }
+    }
+
+    eachLine: func (coord: CoordType, elem: SVGPathElement) {
+        j := 0
+        while (elem points size - j >= 1) {
+            p1 := currentPos
+            p2 := convert(elem points get(j), coord)
+            pen line(p1, p2)
+            currentPos set!(p2)
+            j += 1
         }
     }
 
