@@ -7,36 +7,42 @@ import dye/[core, primitives, app, input, math]
 import math
 import structs/[ArrayList]
 
+// ours
+import neuf/[pen]
+
 /**
  * A control point that you can drag around
  */
-Knot: class extends GlDrawable {
+Knot: class {
 
     rect: GlRectangle
     hover := false
     drag := false
 
-    side := 8.0
+    pos := vec2(0, 0)
+    color := Color white()
+
+    RADIUS := 6.0
+    THRESHOLD := 8.0
 
     init: func (pos: Vec2) {
-        super()
-        rect = GlRectangle new(vec2(side, side))
         this pos set!(pos)
-    }
-
-    draw: func (dye: DyeContext, modelView: Matrix4) {
-        rect render(dye, modelView)
     }
 
     update: func (mousePos: Vec2) {
         dist := mousePos dist(pos)
-        hover = (dist < side)
+        hover = (dist < THRESHOLD)
 
         if (hover) {
-            rect color set!(255, 255, 255)
+            color set!(180, 180, 180)
         } else {
-            rect color set!(0, 255, 0)
+            color set!(0, 255, 0)
         }
+    }
+
+    draw: func (pen: Pen) {
+        pen setColor(color)
+        pen circle(pos, RADIUS)
     }
 
 }
@@ -44,7 +50,7 @@ Knot: class extends GlDrawable {
 /**
  * A set of knots, obviously :)
  */
-Shibari: class extends GlDrawable {
+Shibari: class {
 
     knots := ArrayList<Knot> new()
     selected: Knot = null
@@ -87,17 +93,18 @@ Shibari: class extends GlDrawable {
         knot
     }
 
+    draw: func (pen: Pen) {
+        for (k in knots) {
+            k draw(pen)
+        }
+    }
+
     update: func {
         mousePos := input getMousePos()
         for (k in knots) {
             k update(mousePos)
         }
-    }
 
-    draw: func (dye: DyeContext, modelView: Matrix4) {
-        for (k in knots) {
-            k render(dye, modelView)
-        }
     }
 
 }

@@ -10,7 +10,7 @@ import structs/[ArrayList]
 
 // ours
 use neuf
-import neuf/[canvas, knot, svg, svg-draw]
+import neuf/[canvas, knot, pen, svg, svg-draw]
 
 main: func (argc: Int, argv: CString*) {
     path := "assets/quad-bezier-absolute.svg"
@@ -54,6 +54,7 @@ SVGTest: class extends App {
         "</path>" println()
 
         pen := Pen new(canvas)
+        pen setYInverted(true) // SVG has its origin on the top-left
         drawer := SVGPathDrawer new(parser, pen)
         pen rectangle(vec2(0, 0), vec2(parser getWidth(), parser getHeight())) 
 

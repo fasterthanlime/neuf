@@ -6,7 +6,7 @@ import dye/[core, math]
 import structs/[ArrayList]
 
 // ours
-import neuf/[canvas, svg]
+import neuf/[pen, canvas, svg]
 
 SVGPathDrawer: class {
 
@@ -193,57 +193,6 @@ SVGPathDrawer: class {
 
     getYFactor: func -> Float {
         parser getHeight() / parser viewBox height
-    }
-
-}
-
-Pen: class {
-
-    canvas: Canvas
-
-    init: func (=canvas)
-
-    quadBezier: func (p1, c, p2: Vec2) {
-        canvas plotQuadBezierSeg(
-            p1 x, canvas height - p1 y,
-            c  x, canvas height - c  y,
-            p2 x, canvas height - p2 y
-        )
-    }
-
-    cubicBezier: func (p1, c1, c2, p2: Vec2) {
-        canvas plotCubicBezierSeg(
-            p1 x, canvas height - p1 y,
-            c1 x, canvas height - c1 y,
-            c2 x, canvas height - c2 y,
-            p2 x, canvas height - p2 y
-        )
-    }
-
-    line: func (p1, p2: Vec2) {
-        canvas plotLine(
-            p1 x, canvas height - p1 y,
-            p2 x, canvas height - p2 y
-        )
-    }
-
-    rectangle: func (pos, size: Vec2) {
-        line(
-            vec2(pos x, pos y),
-            vec2(pos x + size x, pos y)
-        )
-        line(
-            vec2(pos x + size x, pos y),
-            vec2(pos x + size x, pos y + size y)
-        )
-        line(
-            vec2(pos x + size x, pos y + size y),
-            vec2(pos x, pos y + size y)
-        )
-        line(
-            vec2(pos x, pos y + size y),
-            vec2(pos x, pos y)
-        )
     }
 
 }
