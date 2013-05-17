@@ -66,20 +66,20 @@ Pen: class {
 
     rectangle: func (pos, size: Vec2) {
         line(
-            vec2(pos x,          _y(pos y)),
-            vec2(pos x + size x, _y(pos y))
+            vec2(pos x,          pos y),
+            vec2(pos x + size x, pos y)
         )
         line(
-            vec2(pos x + size x, _y(pos y)),
-            vec2(pos x + size x, _y(pos y + size y))
+            vec2(pos x + size x, pos y),
+            vec2(pos x + size x, pos y + size y)
         )
         line(
-            vec2(pos x + size x, _y(pos y + size y)),
-            vec2(pos x,          _y(pos y + size y))
+            vec2(pos x + size x, pos y + size y),
+            vec2(pos x,          pos y + size y)
         )
         line(
-            vec2(pos x, _y(pos y + size y)),
-            vec2(pos x, _y(pos y))
+            vec2(pos x, pos y + size y),
+            vec2(pos x, pos y)
         )
     }
 

@@ -7,12 +7,37 @@ import io/[File, StringReader, Reader]
 import text/StringTokenizer
 import structs/[ArrayList]
 
-SVGParser: class {
+/**
+ * Any SVG node such as, but not limited to: a group,
+ * a path.
+ */
+SVGNode: abstract class {
+
+
+}
+
+/**
+ * An SVG group, containing other svg element such as
+ * paths and groups
+ */
+SVGGroup: class extends SVGNode {
+
+    nodes := ArrayList<SVGNode> new()
+
+    add: func (e: SVGNode) {
+        nodes add(e)
+    }
+
+    each: func (f: Func (SVGNode)) {
+        nodes each(|e| f(e))
+    }
+
+}
+
+SVGParser: class extends SVGGroup {
 
     width, height: SVGMetric
     viewBox: SVGViewBox
-
-    paths := ArrayList<SVGPath> new()
 
     init: func (filePath: String) {
         file := File new(filePath)
@@ -33,11 +58,32 @@ SVGParser: class {
             height = SVGMetric new(viewBox height, SVGUnit PX)
         }
 
-        pathNode := tree findElement(svg, "path")
-        path := SVGPath parse(pathNode getAttr("d"))
-        paths add(path)
+        parseGroup(this, svg)
 
         tree delete()
+    }
+
+    parseGroup: func (parent: SVGGroup, node: XmlNode) {
+        entity := node findElement(node, null)
+
+        while (entity) {
+            name := entity getElement()
+            "Found entity %s" printfln(entity getElement())
+
+            match name {
+                case "g" =>
+                    // a group, needs further parsing
+                    group := SVGGroup new()
+                    parent add(group)
+                    parseGroup(group, entity)
+                case "path" =>
+                    // a path, needs parsing
+                    path := SVGPath parse(entity)
+                    parent add(path)
+            }
+
+            entity = entity findElement(node, null)
+        }
     }
 
     getWidth: func -> Float {
@@ -73,13 +119,14 @@ SVGViewBox: class {
 
 }
 
-SVGPath: class {
+SVGPath: class extends SVGNode {
 
     elements := ArrayList<SVGPathElement> new()
 
     init: func
 
-    parse: static func (s: String) -> This {
+    parse: static func (node: XmlNode) -> This {
+        s := node getAttr("d")
         reader := StringReader new(s)
         path := This new()
 

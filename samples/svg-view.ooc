@@ -42,23 +42,41 @@ SVGTest: class extends App {
           parser width toPixels(),
           parser height toPixels()
         )
-
-        path := parser paths first()
-        "<path>" println()
-        for (elem in path elements) {
-            "- %s" printfln(elem type toString())
-            for (point in elem points) {
-                "  %.2f, %.2f" printfln(point x, point y)
-            }
-        }
-        "</path>" println()
+        print(parser)
 
         pen := Pen new(canvas)
         pen setYInverted(true) // SVG has its origin on the top-left
-        drawer := SVGPathDrawer new(parser, pen)
         pen rectangle(vec2(0, 0), vec2(parser getWidth(), parser getHeight())) 
 
-        drawer draw(path)
+        draw(parser, parser, pen)
+    }
+
+    print: func (node: SVGNode) {
+        match node {
+            case group: SVGGroup =>
+                "<g>" println()
+                group each(|n| print(n))
+                "</g>" println()
+            case path: SVGPath =>
+                "<path>" println()
+                for (elem in path elements) {
+                    "- %s" printfln(elem type toString())
+                    for (point in elem points) {
+                        "  %.2f, %.2f" printfln(point x, point y)
+                    }
+                }
+                "</path>" println()
+        }
+    }
+
+    draw: func (node: SVGNode, parser: SVGParser, pen: Pen) {
+        match node {
+            case group: SVGGroup =>
+                group each(|n| draw(n, parser, pen))
+            case path: SVGPath =>
+                drawer := SVGPathDrawer new(parser, pen)
+                drawer draw(path)
+        }
     }
 
     update: func {
