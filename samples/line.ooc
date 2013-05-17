@@ -34,6 +34,7 @@ LineTest: class extends App {
 
         mousePos := dye input getMousePos()
         canvas plotLine(0, 0, mousePos x, mousePos y)
+        canvas plotLineAA(mousePos x, mousePos y, dye width, dye height)
     }
 }
 
