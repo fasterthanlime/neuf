@@ -64,8 +64,8 @@ Pen: class {
 
     line: func (p1, p2: Vec2) {
         canvas plotLine(
-            p1 x, _y(p1 y),
-            p2 x, _y(p2 y)
+            _x(p1 x), _y(p1 y),
+            _x(p2 x), _y(p2 y)
         )
     }
 
