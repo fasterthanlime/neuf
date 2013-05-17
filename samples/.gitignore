@@ -5,5 +5,6 @@ ellipse
 circle
 bezier
 bezier-knots
+bezier-cubic-knots
 cubic-knots
 svg-view
