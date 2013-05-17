@@ -68,7 +68,6 @@ SVGParser: class extends SVGGroup {
 
         while (entity) {
             name := entity getElement()
-            "Found entity %s" printfln(entity getElement())
 
             match name {
                 case "g" =>
@@ -80,6 +79,8 @@ SVGParser: class extends SVGGroup {
                     // a path, needs parsing
                     path := SVGPath parse(entity)
                     parent add(path)
+                case =>
+                    "Unknown XML node, ignored: %s" printfln(name)
             }
 
             entity = entity findElement(node, null)
@@ -173,7 +174,7 @@ SVGPath: class extends SVGNode {
                 case 'Z' =>
                     parsePathElement(path, SVGPathElementType Z, reader)
                 case 'z' =>
-                    parsePathElement(path, SVGPathElementType z, reader)
+                    parsePathElement(path, SVGPathElementType Z, reader)
 
                 case =>
                     "Unknown symbol in SVG path: %c" printfln(t)
@@ -280,8 +281,7 @@ SVGPathElementType: enum {
     t
 
     // close path
-    Z
-    z
+    Z // serves for both Z and z
 
     toString: func -> String {
         match this {
@@ -302,7 +302,6 @@ SVGPathElementType: enum {
             case This t => "shorthand/smooth quadratic bezier relative"
 
             case This Z => "close path"
-            case This z => "close path"
 
             case => "<unknown>"
         }

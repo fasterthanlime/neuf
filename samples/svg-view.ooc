@@ -42,7 +42,12 @@ SVGTest: class extends App {
           parser width toPixels(),
           parser height toPixels()
         )
-        print(parser)
+        "xMin = %.2f, yMin = %.2f" printfln(
+          parser viewBox xMin,
+          parser viewBox yMin
+        )
+
+        //print(parser)
 
         pen := Pen new(canvas)
         pen setYInverted(true) // SVG has its origin on the top-left

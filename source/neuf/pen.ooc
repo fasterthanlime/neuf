@@ -8,6 +8,7 @@ import neuf/[canvas]
 Pen: class {
 
     yInvert := false
+    offset := vec2(0, 0)
 
     canvas: Canvas
 
@@ -31,8 +32,12 @@ Pen: class {
         canvas color set!(c)
     }
 
+    _x: func (x: Float) -> Float {
+        offset x + x
+    }
+
     _y: func (y: Float) -> Float {
-        match yInvert {
+        offset y + match yInvert {
             case true =>
                 canvas height - y
             case =>
@@ -42,18 +47,18 @@ Pen: class {
 
     quadBezier: func (p1, c, p2: Vec2) {
         canvas plotQuadBezierSeg(
-            p1 x, _y(p1 y),
-            c  x, _y(c  y),
-            p2 x, _y(p2 y)
+            _x(p1 x), _y(p1 y),
+            _x(c  x), _y(c  y),
+            _x(p2 x), _y(p2 y)
         )
     }
 
     cubicBezier: func (p1, c1, c2, p2: Vec2) {
         canvas plotCubicBezierSeg(
-            p1 x, _y(p1 y),
-            c1 x, _y(c1 y),
-            c2 x, _y(c2 y),
-            p2 x, _y(p2 y)
+            _x(p1 x), _y(p1 y),
+            _x(c1 x), _y(c1 y),
+            _x(c2 x), _y(c2 y),
+            _x(p2 x), _y(p2 y)
         )
     }
 

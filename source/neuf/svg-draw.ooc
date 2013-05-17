@@ -16,11 +16,13 @@ SVGPathDrawer: class {
     currentPos: Vec2
     lastType: DrawType
     lastControl: Vec2
+    firstPoint: Vec2
 
     init: func (=parser, =pen)
 
     reset: func {
         currentPos = vec2(0, 0)
+        firstPoint = vec2(0, 0)
         lastType = DrawType OTHER
     }
 
@@ -41,11 +43,27 @@ SVGPathDrawer: class {
 
             case SVGPathElementType M =>
                 point := elem points first()
-                move(absolute(point))
+                coord := absolute(point)
+                move(coord)
+                if (i == 0) {
+                    firstPoint set!(coord)
+                }
 
             case SVGPathElementType m =>
                 point := elem points first()
-                move(relative(point))
+                coord := relative(point)
+                move(coord)
+                if (i == 0) {
+                    firstPoint set!(coord)
+                }
+
+            // Close path
+
+            case SVGPathElementType Z =>
+                p1 := currentPos
+                p2 := firstPoint
+                pen line(p1, p2)
+                currentPos set!(p2)
 
             // Line
 
