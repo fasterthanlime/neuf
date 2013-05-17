@@ -16,7 +16,7 @@ Canvas: class extends GlDrawable {
     numBytes: Int
     width, height: Int
 
-    color := Color4 new(255, 255, 255, 255)
+    color := Color4 new(0, 0, 0, 255)
 
     texture: Texture
     sprite: GlSprite
@@ -34,8 +34,11 @@ Canvas: class extends GlDrawable {
     }
 
     clear: func {
-        for (i in 0..numBytes) {
-            pixels[i] = 0
+        for (i in 0..(width * height)) {
+            pixels[i * 4 + 0] = 255
+            pixels[i * 4 + 1] = 255
+            pixels[i * 4 + 2] = 255
+            pixels[i * 4 + 3] = 255
         }
     }
 
@@ -48,6 +51,37 @@ Canvas: class extends GlDrawable {
         pixels[index + 1] = color g
         pixels[index + 2] = color b
         pixels[index + 3] = color a
+    }
+
+    putAA: func (x, y: Int, aU: UInt8) {
+        if (x < 0 || x >= width ) return
+        if (y < 0 || y >= height) return
+        
+        index := (x + (y * width)) * 4
+
+        aa := color A
+        ab := (aU as Float) / 255.0
+        alpha := aa * ab
+
+        //"putAA / aU = %d, alpha = %.2f" printfln(aU, alpha)
+
+        blend(index + 0, color r, alpha)
+        blend(index + 1, color g, alpha)
+        blend(index + 2, color b, alpha)
+        blendAlpha(index + 3, alpha)
+    }
+
+    blend: func (index: Int, newColorU, alpha: Float) {
+        newColor := (newColorU as Float) / 255.0
+        oldColor := (pixels[index] as Float) / 255.0 
+        result := oldColor * (1.0 - alpha) + newColor * alpha
+        pixels[index] = (result * 255.0) as UInt8
+    }
+
+    blendAlpha: func (index: Int, alpha: Float) {
+        oldAlpha := (pixels[index] as Float) / 255.0
+        result := oldAlpha + alpha * (1.0 - oldAlpha)
+        pixels[index] = (result * 255.0) as UInt8
     }
 
     draw: func (dye: DyeContext, modelView: Matrix4) {
@@ -85,6 +119,40 @@ Canvas: class extends GlDrawable {
                err += dx
                y0 += sy
             } /* e_xy+e_y < 0 */
+        }
+    }
+
+    plotLineAA: func (x0, y0, x1, y1: Int) {
+        dx := abs(x1 - x0)
+        sx := x0 < x1 ? 1 : -1
+
+        dy := abs(y1 - y0)
+        sy := y0 < y1 ? 1 : -1
+
+        /* error value e_xy */
+        err := dx - dy
+        e2, x2: Int
+        ed: Float = dx + dy == 0 ? 1.0 : sqrt((dx * dx + dy * dy) as Double)
+
+        while (true) {                                         /* pixel loop */
+            putAA(x0, y0, 255.0 * (1.0 - (abs(err - dx + dy) as Float) / ed));
+            e2 = err
+            x2 = x0
+
+            if (2 * e2 >= -dx) {                                    /* x step */
+                if (x0 == x1) break
+                if (e2 + dy < ed) {
+                    putAA(x0, y0 + sy, 255.0 * (1.0 - (e2 + dy) as Float / ed))
+                }
+                err -= dy; x0 += sx
+            } 
+            if (2 * e2 <= dy) {                                     /* y step */
+                if (y0 == y1) break
+                if (dx - e2 < ed) {
+                    putAA(x2 + sx, y0, 255.0 * (1.0 - (dx - e2) as Float / ed))
+                }
+                err += dx; y0 += sy
+            }
         }
     }
 
@@ -181,7 +249,7 @@ Canvas: class extends GlDrawable {
         y3 := iy3 as Float
 
         a := 0.0
-        step := 0.01
+        step := 0.025
 
         prevX := x1
         prevY := y1
@@ -198,7 +266,7 @@ Canvas: class extends GlDrawable {
             x123 := x12 * ai + x23 * a
             y123 := y12 * ai + y23 * a
 
-            plotLine(prevX as Int, prevY as Int, x123 as Int, y123 as Int)
+            plotLineAA(prevX as Int, prevY as Int, x123 as Int, y123 as Int)
 
             prevX = x123
             prevY = y123
@@ -221,7 +289,7 @@ Canvas: class extends GlDrawable {
         y4 := iy4 as Float
 
         a := 0.0
-        step := 0.01
+        step := 0.025
 
         prevX := x1
         prevY := y1
@@ -247,7 +315,7 @@ Canvas: class extends GlDrawable {
             x1234 := x123 * ai + x234 * a
             y1234 := y123 * ai + y234 * a
 
-            plotLine(prevX as Int, prevY as Int, x1234 as Int, y1234 as Int)
+            plotLineAA(prevX as Int, prevY as Int, x1234 as Int, y1234 as Int)
 
             prevX = x1234
             prevY = y1234
