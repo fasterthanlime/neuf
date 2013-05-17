@@ -51,6 +51,9 @@ SVGTest: class extends App {
 
         pen := Pen new(canvas)
         pen setYInverted(true) // SVG has its origin on the top-left
+
+        pen offset set!(450, -450)
+
         pen rectangle(vec2(0, 0), vec2(parser getWidth(), parser getHeight())) 
 
         draw(parser, parser, pen)
